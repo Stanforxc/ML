@@ -104,4 +104,5 @@ def spamTest():
             errorCount += 1
     print 'the error rate is:',float(errorCount)/len(testSet)
 
-spamTest()
+post,classvec = loadDataSet()
+print trainNB0(post,classvec)

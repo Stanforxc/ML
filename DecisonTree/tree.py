@@ -66,6 +66,7 @@ def majorityCnt(classList):
     sortedClassCount = sorted(classCount.iteritems(),key=operator.itemgetter(1),reverse=True)
     return sortedClassCount[0][0]
 
+#构建决策树
 def createTree(dataSet,labels):
     classList = [example[-1] for example in dataSet]#属性
     if classList.count(classList[0]) == len(classList):#类别完全相同，则停止继续划分
@@ -83,6 +84,49 @@ def createTree(dataSet,labels):
         myTree[beatFeatLabel][value] = createTree(splitDataSet(dataSet,bestFeat,value),subLabels)
     return myTree
 
+#使用决策树进行分类
+def classify(inputTree,featLabels,testVec):
+    firstStr = inputTree.keys()[0]
+    secondDict = inputTree[firstStr]
+    featIndex = featLabels.index(firstStr)
+    for key in secondDict.keys():
+        if testVec[featIndex] == key:
+            if type(secondDict[key]).__name__ == 'Dict':
+                classLabel = classify(secondDict[key],featLabels,testVec)
+        else:
+            classLabel = secondDict[key]
+    return classLabel
 
+#数据持久化，pickle模块
+def storeTree(inputTree,filename):
+    import pickle
+    fw = open(filename,'w')
+    pickle.dump(inputTree,fw)
+    fw.close()
+
+def grabTree(filename):
+    import pickle
+    fr = open(filename)
+    return pickle.load(fr)
+
+
+"""
 myDat,labels = createDataSet()
-print createTree(myDat,labels)
+tmpLabels = labels[:]
+myTree =  createTree(myDat,labels)
+print classify(myTree,tmpLabels,[1,0])
+storeTree(myTree,"classifierStorage.txt")
+print grabTree('classifierStorage.txt')
+"""
+
+#对隐形眼镜进行分类
+def lensClassify():
+    fr = open('lenses.txt')
+    lenses = [inst.split('\t') for inst in fr.readlines()]
+    lensesLabels = ['age','prescript','astigmatic','tearRate']
+    tmplensesLabels = lensesLabels[:]
+    lensesTree = createTree(lenses,lensesLabels)
+    classlabel =  classify(lensesTree,tmplensesLabels,["young","myope","no","normal"])
+    print classlabel
+
+lensClassify()
